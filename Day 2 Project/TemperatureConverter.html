@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assignment 8: Temperature Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .converter {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            width: 400px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        .radio-group {
+            margin-bottom: 20px;
+        }
+        .radio-option {
+            margin: 10px 0;
+        }
+        .radio-option input {
+            width: auto;
+            margin-right: 10px;
+        }
+        .radio-option label {
+            display: inline;
+            font-weight: normal;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            background: #f5576c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #e04556;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            min-height: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="converter">
+        <h1>🌡️ Temperature Converter</h1>
+        
+        <div class="input-group">
+            <label>Enter Temperature:</label>
+            <input type="number" id="tempInput" placeholder="Enter temperature" step="0.01">
+        </div>
+        
+        <div class="radio-group">
+            <label>Conversion Type:</label>
+            <div class="radio-option">
+                <input type="radio" id="celsiusToFahrenheit" name="conversion" value="CtoF" checked>
+                <label for="celsiusToFahrenheit">Celsius to Fahrenheit</label>
+            </div>
+            <div class="radio-option">
+                <input type="radio" id="fahrenheitToCelsius" name="conversion" value="FtoC">
+                <label for="fahrenheitToCelsius">Fahrenheit to Celsius</label>
+            </div>
+        </div>
+        
+        <button id="convertBtn">Convert</button>
+        
+        <p id="result"></p>
+    </div>
+
+    <script>
+        // Get references to elements
+        let tempInput = document.getElementById('tempInput');
+        let convertBtn = document.getElementById('convertBtn');
+        let result = document.getElementById('result');
+        
+        // Add click event listener
+        convertBtn.addEventListener('click', function() {
+            // Get temperature value
+            let temp = tempInput.value;
+            
+            // Validate input
+            if (temp === '') {
+                alert('Please enter a temperature!');
+                return;
+            }
+            
+            // Convert to number
+            temp = Number(temp);
+            
+            // Check if valid number
+            if (isNaN(temp)) {
+                alert('Please enter a valid number!');
+                return;
+            }
+            
+            // Check which radio button is selected
+            let celsiusToFahrenheit = document.getElementById('celsiusToFahrenheit');
+            let convertedTemp;
+            let resultText;
+            
+            if (celsiusToFahrenheit.checked) {
+                // Celsius to Fahrenheit: F = (C × 9/5) + 32
+                convertedTemp = (temp * 9/5) + 32;
+                resultText = temp + '°C = ' + convertedTemp.toFixed(2) + '°F';
+            } else {
+                // Fahrenheit to Celsius: C = (F - 32) × 5/9
+                convertedTemp = (temp - 32) * 5/9;
+                resultText = temp + '°F = ' + convertedTemp.toFixed(2) + '°C';
+            }
+            
+            // Display result
+            result.textContent = resultText;
+        });
+        
+        // Allow Enter key to convert
+        tempInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                convertBtn.click();
+            }
+        });
+    </script>
+</body>
+</html>
