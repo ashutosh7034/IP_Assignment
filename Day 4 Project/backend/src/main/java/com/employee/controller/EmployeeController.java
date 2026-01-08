@@ -1,8 +1,10 @@
 package com.employee.controller;
 
+import com.employee.dto.CreatedEmployeeResponse;
 import com.employee.dto.EmployeeDTO;
+import com.employee.entity.User;
+import com.employee.service.AuthService;
 import com.employee.service.EmployeeService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,16 +15,66 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/employees")
-@RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class EmployeeController {
     
     private final EmployeeService employeeService;
+    private final AuthService authService;
+
+    public EmployeeController(EmployeeService employeeService, AuthService authService) {
+        this.employeeService = employeeService;
+        this.authService = authService;
+    }
     
     @GetMapping
-    public ResponseEntity<List<EmployeeDTO>> getAllEmployees() {
-        List<EmployeeDTO> employees = employeeService.getAllEmployees();
-        return ResponseEntity.ok(employees);
+    public ResponseEntity<?> getAllEmployees(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+        try {
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No token provided");
+            }
+            
+            String token = authHeader.substring(7);
+            if (!authService.validateToken(token)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+            }
+            
+            String username = authService.getUsernameFromToken(token);
+            User user = authService.getUserByUsername(username);
+            
+            // Check if admin
+            if (user.getRoles().contains("ROLE_ADMIN")) {
+                List<EmployeeDTO> employees = employeeService.getAllEmployees();
+                return ResponseEntity.ok(employees);
+            } else {
+                // Regular user - return only their own profile
+                if (user.getEmployeeId() != null) {
+                    EmployeeDTO employee = employeeService.getEmployeeById(user.getEmployeeId());
+                    return ResponseEntity.ok(List.of(employee));
+                } else {
+                    return ResponseEntity.ok(List.of());
+                }
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+        }
+    }
+    
+    @GetMapping("/me")
+    public ResponseEntity<?> getMyProfile(@RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.substring(7);
+            String username = authService.getUsernameFromToken(token);
+            User user = authService.getUserByUsername(username);
+            
+            if (user.getEmployeeId() != null) {
+                EmployeeDTO employee = employeeService.getEmployeeById(user.getEmployeeId());
+                return ResponseEntity.ok(employee);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No employee profile linked");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
     }
     
     @GetMapping("/{id}")
@@ -36,9 +88,9 @@ public class EmployeeController {
     }
     
     @PostMapping
-    public ResponseEntity<EmployeeDTO> createEmployee(@RequestBody EmployeeDTO dto) {
+    public ResponseEntity<CreatedEmployeeResponse> createEmployee(@RequestBody EmployeeDTO dto) {
         try {
-            EmployeeDTO created = employeeService.createEmployee(dto);
+            CreatedEmployeeResponse created = employeeService.createEmployee(dto);
             return ResponseEntity.status(HttpStatus.CREATED).body(created);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();

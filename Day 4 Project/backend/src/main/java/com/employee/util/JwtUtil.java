@@ -1,10 +1,10 @@
 package com.employee.util;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +22,19 @@ public class JwtUtil {
     private Long jwtExpiration;
     
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
+        byte[] keyBytes = jwtSecret.getBytes();
+        if (keyBytes.length < 32) {
+            byte[] paddedKey = new byte[32];
+            System.arraycopy(keyBytes, 0, paddedKey, 0, keyBytes.length);
+            return Keys.hmacShaKeyFor(paddedKey);
+        }
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
+    
+    private JwtParser getParser() {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build();
     }
     
     public String generateToken(String username) {
@@ -36,10 +48,7 @@ public class JwtUtil {
     
     public Boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder()
-                    .setSigningKey(getSigningKey())
-                    .build()
-                    .parseClaimsJws(token);
+            getParser().parseClaimsJws(token);
             return true;
         } catch (Exception e) {
             return false;
@@ -60,9 +69,7 @@ public class JwtUtil {
     }
     
     private Claims extractAllClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
+        return getParser()
                 .parseClaimsJws(token)
                 .getBody();
     }

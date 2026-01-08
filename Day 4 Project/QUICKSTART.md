@@ -1,40 +1,67 @@
-# Day 4 Project - Quick Start Guide
+# Day 4 Project - Quick Start Guide (MySQL profile)
 
 ## Prerequisites
-- Java 17 or higher installed
-- Maven 3.6 or higher installed
+- Java 17+
+- Maven or mvnd
+- MySQL running on localhost:3307 with database `ems_db`, user `root`, password `Ashutosh@3276`
 
-## Installation & Setup
+## Backend (MySQL profile)
 
-### Step 1: Navigate to Backend Directory
+### Step 1: Navigate to backend
 ```bash
-cd "Day4_Project/backend"
+cd "Day 4 Project/backend"
 ```
 
-### Step 2: Build the Project
+### Step 2: Build
 ```bash
-mvn clean install
+mvnd clean install
 ```
 
-This command will:
-- Download all dependencies (may take 3-5 minutes on first run)
-- Compile Java source code
-- Create executable JAR file
-
-### Step 3: Run the Application
+### Step 3: Run with MySQL profile
 ```bash
-mvn spring-boot:run
+$env:SPRING_PROFILES_ACTIVE="mysql"   # PowerShell
+mvnd spring-boot:run
 ```
 
-Or run the JAR directly:
+App runs at http://localhost:8080
+
+## Frontend (split pages)
 ```bash
-java -jar target/day4-employee-management-1.0.0.jar
+cd "Day 4 Project/frontend"
+python -m http.server 3000
+```
+Open http://localhost:3000 then:
+- Login page: index.html
+- Admin dashboard: admin.html (opens after admin login)
+- User profile: user.html (opens after user login)
+
+## Default accounts
+- Admin: admin / admin123
+- Users: john/john123, jane/jane123, mike/mike123
+
+## Key endpoints
+- POST /api/auth/login — returns token, roles, employeeId
+- GET /api/employees — admin: all; user: own record
+- GET /api/employees/me — current user profile
+- POST/PUT/DELETE /api/employees — admin only
+
+## Quick API test
+```bash
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin123"}'
+
+curl -H "Authorization: Bearer <TOKEN>" http://localhost:8080/api/employees
 ```
 
-### Step 4: Access the Application
-- **REST API**: http://localhost:8080/api/employees
-- **Login Page**: Open `frontend/index.html` in a web browser
-- **H2 Database Console**: http://localhost:8080/h2-console (optional)
+## Config notes
+- MySQL settings: backend/src/main/resources/application-mysql.properties
+- If port 8080 is busy: set server.port=8081 in application-mysql.properties
+
+## Troubleshooting
+- Login fails: ensure mysql profile is active and Authorization header uses `Bearer <token>`
+- DB connection: verify MySQL at 3307 with correct creds and schema `ems_db`
+- CORS: backend allows http://localhost:3000
 
 ## Testing the API
 

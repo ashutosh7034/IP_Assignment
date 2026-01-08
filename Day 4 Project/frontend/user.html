@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile - Employee Management</title>
+    <style>
+        :root {
+            --primary: #2f855a;
+            --secondary: #276749;
+            --bg: #f0fff4;
+            --panel: #ffffff;
+            --text: #1a202c;
+            --muted: #4a5568;
+            --border: #c6f6d5;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 24px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff;
+            padding: 18px 22px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 12px 24px rgba(0,0,0,0.14);
+        }
+
+        .badge {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-weight: 700;
+        }
+
+        button.logout {
+            background: #fff;
+            color: var(--primary);
+            border: none;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        main {
+            margin-top: 20px;
+            display: grid;
+            gap: 16px;
+        }
+
+        .panel {
+            background: var(--panel);
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+            border: 1px solid var(--border);
+        }
+
+        .panel h2 { margin-bottom: 10px; }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+        }
+
+        .info {
+            background: linear-gradient(135deg, rgba(47,133,90,0.08), rgba(39,103,73,0.08));
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .label { color: var(--muted); font-size: 0.9rem; }
+        .value { font-weight: 700; font-size: 1.05rem; margin-top: 4px; }
+
+        .message { margin-top: 10px; padding: 10px; border-radius: 8px; display: none; }
+        .message.show { display: block; }
+        .message.error { background: #fed7d7; color: #9b2c2c; border: 1px solid #feb2b2; }
+    </style>
+</head>
+<body>
+    <header>
+        <div>
+            <h1>Your Profile</h1>
+            <div id="subtitle">View your employee details</div>
+        </div>
+        <div style="display:flex; align-items:center; gap: 12px;">
+            <div class="badge" id="userBadge"></div>
+            <button class="logout" id="logoutBtn">Logout</button>
+        </div>
+    </header>
+
+    <main>
+        <section class="panel">
+            <h2>Employee Info</h2>
+            <div id="msg" class="message error"></div>
+            <div class="info-grid" id="infoGrid"></div>
+        </section>
+    </main>
+
+    <script>
+        const apiBase = 'http://localhost:8080/api';
+        const token = localStorage.getItem('token');
+        const roles = JSON.parse(localStorage.getItem('roles') || '[]');
+
+        if (!token || roles.includes('ROLE_ADMIN')) {
+            // No token or admin trying to view user page: send to login/admin
+            window.location.href = token ? 'admin.html' : 'index.html';
+        }
+
+        const headers = { 'Authorization': `Bearer ${token}` };
+        const userBadge = document.getElementById('userBadge');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const infoGrid = document.getElementById('infoGrid');
+        const msg = document.getElementById('msg');
+
+        function showError(text) {
+            msg.textContent = text;
+            msg.classList.add('show');
+        }
+
+        function fillBadge() {
+            const username = localStorage.getItem('username') || 'User';
+            userBadge.textContent = `${username} • USER`;
+        }
+
+        async function loadProfile() {
+            msg.classList.remove('show');
+            const resp = await fetch(`${apiBase}/employees/me`, { headers });
+            if (!resp.ok) {
+                showError('Failed to load profile.');
+                return;
+            }
+            const emp = await resp.json();
+            render(emp);
+        }
+
+        function render(emp) {
+            infoGrid.innerHTML = '';
+            const fields = [
+                ['Name', emp.name],
+                ['Department', emp.department],
+                ['Position', emp.position],
+                ['Salary', emp.salary],
+                ['Email', emp.email],
+                ['Phone', emp.phone],
+                ['Status', emp.status],
+                ['Employee ID', emp.id]
+            ];
+            fields.forEach(([label, value]) => {
+                const div = document.createElement('div');
+                div.className = 'info';
+                div.innerHTML = `<div class="label">${label}</div><div class="value">${value || ''}</div>`;
+                infoGrid.appendChild(div);
+            });
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
+
+        logoutBtn.addEventListener('click', logout);
+        fillBadge();
+        loadProfile();
+    </script>
+</body>
+</html>

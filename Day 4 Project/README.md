@@ -1,403 +1,111 @@
-# Day 4 Project - Advanced Spring Boot with JPA & JWT Authentication
+# Day 4 Project - Employee Management (Spring Boot + JWT + MySQL)
 
 ## Overview
-Day 4 focuses on enterprise-level Spring Boot development with database persistence, JWT authentication, and professional full-stack architecture. This project demonstrates advanced concepts including Spring Data JPA, Spring Security, REST API design, and modern frontend development with authentication.
-
-## 📚 Assignment Links
-- **Notes & Documentation**: [Day 4 Notes](https://shaileshsonareg.github.io/tcet/day4/)
-- **MCQ Test**: [Day 4 Test](https://cquiz.ciacloud.in/take_test.php?test_id=MTE4)
-- **Reference Code**: [GitHub - TCET Day 4](https://github.com/shaileshsonareg/tcet/tree/main/day4)
-- **Project Reference**: [Spring Boot Demo](https://github.com/ciaindia/spring-boot-demo.git)
-- **PRD Sample**: [Product Requirements Document](https://shaileshsonareg.github.io/tcet/day4/prd.html)
+Full-stack employee management with JWT auth, role-based dashboards, and MySQL persistence. Admins can manage all employees; regular users see only their own profile.
 
 ---
 
-## 🚀 How to Run - Quick Start Guide
-
-### Step 1: Start the Backend (Spring Boot with JWT & JPA)
-
-```bash
-# Navigate to backend folder
-cd "Day 4 Project/backend"
-
-# Build the project
-mvn clean install
-
-# Run the application
-mvn spring-boot:run
-```
-
-**Alternative (if Maven wrapper exists):**
-```bash
-# Windows
-.\mvnw clean install
-.\mvnw spring-boot:run
-
-# Mac/Linux
-./mvnw clean install
-./mvnw spring-boot:run
-```
-
-✅ **Backend is ready when you see:**
-```
-Started EmployeeManagementApplication in X.XXX seconds
-Tomcat started on port(s): 8080 (http)
-```
-
-🌐 **Backend URLs:**
-- API: http://localhost:8080/api
-- H2 Console: http://localhost:8080/h2-console
-
-### Step 2: Open the Frontend
-
-```bash
-# Simply open the HTML file in your browser
-Open "Day 4 Project/frontend/index.html"
-```
-
-**OR** double-click `index.html` in File Explorer
-
-### Step 3: Login and Test
-
-**Default Credentials:**
-- Username: `user`
-- Password: `user123`
-
-**OR Admin Account:**
-- Username: `admin`
-- Password: `admin123`
-
-**Test Flow:**
-1. Login with credentials above
-2. View employee dashboard with statistics
-3. Add new employees using the form
-4. Edit existing employees
-5. Delete employees (with confirmation)
-6. Search employees by name/email
-7. Logout and login again
+## Quick Start
 
 ### Prerequisites
+- Java 17+
+- Maven or mvnd (Maven Daemon)
+- MySQL running locally on port 3307 with database `ems_db` and user `root` / password `Ashutosh@3276`
+- Node not required; frontend is plain HTML/JS
 
-✅ **Required Software:**
-- **Java 17 or higher** - [Download JDK](https://www.oracle.com/java/technologies/downloads/)
-- **Maven 3.6+** - [Download Maven](https://maven.apache.org/download.cgi)
-- **Modern Web Browser** (Chrome, Firefox, Safari, Edge)
+Create the database (once):
+```sql
+CREATE DATABASE IF NOT EXISTS ems_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+Optional: run the schema file if you want explicit DDL: `backend/db/mysql/ems_schema.sql`.
 
-✅ **Verify Installation:**
+### Backend (MySQL profile)
 ```bash
-java -version    # Should show: java version "17" or higher
-mvn -version     # Should show: Apache Maven 3.6.x or higher
+cd "Day 4 Project/backend"
+$env:SPRING_PROFILES_ACTIVE="mysql"   # PowerShell (Windows)
+mvnd spring-boot:run                   # or: mvn spring-boot:run
 ```
-
-### Quick API Test (Optional)
-
-**Login to get JWT token:**
-```bash
-curl -X POST http://localhost:8080/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"username":"user","password":"user123"}'
-```
-
-**Use token to get employees:**
-```bash
-curl -H "Authorization: Bearer <YOUR_TOKEN>" \
-  http://localhost:8080/api/employees
-```
-
-### Troubleshooting
-
-**Problem: Port 8080 already in use**
-```properties
-# Edit: backend/src/main/resources/application.properties
-server.port=8081
-```
-
-**Problem: Maven not found**
-- Download Maven from https://maven.apache.org/download.cgi
-- Extract and add to PATH environment variable
-- Restart terminal/command prompt
-
-**Problem: Cannot login**
-- Ensure backend is running (check console for errors)
-- Check browser console (F12) for error messages
-- Verify credentials: user/user123 or admin/admin123
-
-**Problem: Database errors**
-- H2 database auto-initializes on startup
-- Check application.properties for correct configuration
-- Delete any existing database files and restart
-
-**Problem: CORS errors**
-- Ensure @CrossOrigin is enabled in controllers
-- Check browser console for specific CORS error
-- Verify frontend is accessing correct backend URL
-
-For detailed instructions, see [QUICKSTART.md](QUICKSTART.md)
-
----
-
-## 📋 Project: Advanced Employee Management System
-
-### Objective
-Build a complete enterprise-grade employee management system with JWT authentication, database persistence, and modern security features.
-
-### Key Features
-- 🔐 **JWT Authentication** - Secure login and token-based access control
-- 👥 **User Management** - User registration, login, and role-based authorization
-- 💼 **Employee CRUD** - Complete Create, Read, Update, Delete operations with JPA
-- 💾 **Database Integration** - H2 in-memory database (configurable for MySQL)
-- 🔍 **Search & Filter** - Search employees by name, email, or department
-- 📊 **Statistics** - Calculate salary averages and departmental totals
-- 🎨 **Modern UI** - Responsive frontend with authentication flow
-- 🛡️ **Security** - BCrypt password hashing, CORS configuration
-
----
-
-## 🏗️ Technology Stack
-
-### Backend
-- **Spring Boot 3.2.0** - Application framework
-- **Java 17** - Programming language
-- **Spring Data JPA** - Database operations and ORM
-- **Spring Security** - Authentication and authorization
-- **JWT (jjwt 0.12.3)** - JSON Web Token for stateless auth
-- **H2 Database** - In-memory database (development)
-- **MySQL** - Production database (optional)
-- **Hibernate** - JPA implementation
-- **Lombok** - Reduce boilerplate code
-- **Maven** - Build and dependency management
+The app starts on http://localhost:8080.
 
 ### Frontend
-- **HTML5** - Structure and semantics
-- **CSS3** - Responsive design with gradients
-- **JavaScript ES6** - Modern async/await patterns
-- **Axios** - HTTP client for API calls
-- **LocalStorage** - JWT token persistence
+```bash
+cd "Day 4 Project/frontend"
+python -m http.server 3000
+```
+Open http://localhost:3000 and log in.
+
+### Default Accounts
+- Admin: admin / admin123 (can add/edit/delete and view all)
+- Users: john/john123, jane/jane123, mike/mike123 (can only see their own profile)
+
+### Key Endpoints (require Bearer token)
+- POST /api/auth/login — returns token, roles, employeeId
+- GET /api/employees — admin: all; user: only their own record
+- GET /api/employees/me — current user’s employee profile
+- POST /api/employees — admin only (create)
+- PUT /api/employees/{id} — admin only (update)
+- DELETE /api/employees/{id} — admin only (delete)
+
+### API Smoke Test
+```bash
+curl -X POST http://localhost:8080/api/auth/login \ 
+  -H "Content-Type: application/json" \ 
+  -d '{"username":"admin","password":"admin123"}'
+
+curl -H "Authorization: Bearer <TOKEN>" http://localhost:8080/api/employees
+```
+
+### Configuration Notes
+- MySQL profile config: backend/src/main/resources/application-mysql.properties
+- Default profile uses H2; for MySQL always set `SPRING_PROFILES_ACTIVE=mysql`.
+- If port 8080 is busy, set `server.port=8081` in application-mysql.properties.
+
+### Troubleshooting
+- Login fails: ensure backend is running with mysql profile and Authorization header is `Bearer <token>`.
+- DB connection issues: verify MySQL on port 3307, credentials match, and schema exists.
+- CORS: backend allows http://localhost:3000 by default via SecurityConfig/CorsConfig.
 
 ---
 
-## 📊 Data Models
-
-### User Entity (Authentication)
-```java
-@Entity
-@Table(name = "users")
-public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
-    private String username;     // Unique username
-    private String email;        // Unique email
-    private String password;     // BCrypt hashed password
-    private String fullName;     // Display name
-    private Boolean isActive;    // Account status
-    private Set<String> roles;   // User roles (ROLE_USER, ROLE_ADMIN)
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-}
-```
-
-### Employee Entity (Business Data)
-```java
-@Entity
-@Table(name = "employees")
-public class EmployeeEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
-    private String name;         // Employee name
-    private String department;   // Department (IT, HR, Finance, etc.)
-    private Double salary;       // Annual salary
-    private String email;        // Contact email (unique)
-    private String phone;        // Phone number
-    private String position;     // Job title
-    private String status;       // ACTIVE, INACTIVE
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-}
-```
+## Tech Stack
+- Spring Boot 3.2.x, Spring Security, Spring Data JPA, JJWT 0.11.5
+- Java 17, Maven/mvnd
+- MySQL 8 (primary), H2 for default profile
+- Frontend: HTML/CSS/JS with Axios; tokens stored in localStorage
 
 ---
 
-## 🔌 API Endpoints
-
-### Authentication Endpoints
-
-#### POST /api/auth/register
-Register a new user account
-```bash
-curl -X POST http://localhost:8080/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "johndoe",
-    "email": "john@example.com",
-    "password": "password123",
-    "fullName": "John Doe"
-  }'
-```
-
-**Response**:
-```json
-{
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "username": "johndoe",
-  "email": "john@example.com",
-  "message": "Registration successful"
-}
-```
-
-#### POST /api/auth/login
-Login and receive JWT token
-```bash
-curl -X POST http://localhost:8080/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "user",
-    "password": "user123"
-  }'
-```
-
-**Response**:
-```json
-{
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "username": "user",
-  "email": "user@example.com",
-  "message": "Login successful"
-}
-```
-
-#### GET /api/auth/validate
-Validate JWT token
-```bash
-curl -H "Authorization: Bearer <TOKEN>" \
-  http://localhost:8080/api/auth/validate
-```
-
-### Employee Endpoints (Protected - Requires JWT)
-
-#### GET /api/employees
-Get all employees
-```bash
-curl -H "Authorization: Bearer <TOKEN>" \
-  http://localhost:8080/api/employees
-```
-
-#### GET /api/employees/{id}
-Get employee by ID
-```bash
-curl -H "Authorization: Bearer <TOKEN>" \
-  http://localhost:8080/api/employees/1
-```
-
-#### POST /api/employees
-Create new employee
-```bash
-curl -X POST http://localhost:8080/api/employees \
-  -H "Authorization: Bearer <TOKEN>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Alice Green",
-    "department": "IT",
-    "salary": 55000,
-    "email": "alice@example.com",
-    "phone": "9999999999",
-    "position": "Developer"
-  }'
-```
-
-#### PUT /api/employees/{id}
-Update employee
-```bash
-curl -X PUT http://localhost:8080/api/employees/1 \
-  -H "Authorization: Bearer <TOKEN>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Alice Green",
-    "department": "IT",
-    "salary": 60000,
-    "email": "alice.updated@example.com",
-    "phone": "9999999999",
-    "position": "Senior Developer"
-  }'
-```
-
-#### DELETE /api/employees/{id}
-Delete employee
-```bash
-curl -X DELETE http://localhost:8080/api/employees/1 \
-  -H "Authorization: Bearer <TOKEN>"
-```
-
-#### GET /api/employees/department/{department}
-Get employees by department
-```bash
-curl -H "Authorization: Bearer <TOKEN>" \
-  http://localhost:8080/api/employees/department/IT
-```
-
-#### GET /api/employees/search/{searchTerm}
-Search employees
-```bash
-curl -H "Authorization: Bearer <TOKEN>" \
-  http://localhost:8080/api/employees/search/Alice
-```
-
-#### GET /api/employees/stats/count
-Get total employee count
-```bash
-curl -H "Authorization: Bearer <TOKEN>" \
-  http://localhost:8080/api/employees/stats/count
-```
-
-#### GET /api/employees/stats/salary
-Get average salary
-```bash
-curl -H "Authorization: Bearer <TOKEN>" \
-  http://localhost:8080/api/employees/stats/salary
-```
-
----
-
-## 📂 Project Structure
+## Project Structure
 
 ```
 Day 4 Project/
 ├── backend/
 │   ├── src/main/java/com/employee/
-│   │   ├── entity/
-│   │   │   ├── EmployeeEntity.java      (JPA Entity with annotations)
-│   │   │   └── User.java                (User entity with roles)
-│   │   ├── repository/
-│   │   │   ├── EmployeeRepository.java  (JpaRepository interface)
-│   │   │   └── UserRepository.java      (User data access)
-│   │   ├── service/
-│   │   │   ├── EmployeeService.java     (Business logic)
-│   │   │   └── AuthService.java         (Authentication logic)
-│   │   ├── controller/
-│   │   │   ├── EmployeeController.java  (REST endpoints)
-│   │   │   └── AuthController.java      (Login/Register)
-│   │   ├── dto/
-│   │   │   ├── EmployeeDTO.java         (Data transfer object)
-│   │   │   ├── LoginRequest.java        (Login request model)
-│   │   │   ├── LoginResponse.java       (Login response model)
-│   │   │   └── RegisterRequest.java     (Registration model)
-│   │   ├── util/
-│   │   │   └── JwtUtil.java             (JWT token operations)
-│   │   ├── config/
-│   │   │   ├── SecurityConfig.java      (Security & CORS config)
-│   │   │   └── DataInitializer.java     (Sample data loader)
-│   │   └── EmployeeManagementApplication.java
-│   ├── src/main/resources/
-│   │   └── application.properties       (App configuration)
-│   └── pom.xml                          (Maven dependencies)
-├── frontend/
-│   └── index.html                       (Login + Dashboard UI)
+│   │   ├── config/ (SecurityConfig, CorsConfig, DataInitializer)
+│   │   ├── controller/ (AuthController, EmployeeController)
+│   │   ├── dto/ (LoginRequest, LoginResponse, RegisterRequest, EmployeeDTO)
+│   │   ├── entity/ (EmployeeEntity, User)
+│   │   ├── service/ (AuthService, EmployeeService)
+│   │   └── util/ (JwtUtil)
+│   ├── src/main/resources/ (application.properties, application-mysql.properties)
+│   └── db/mysql/ems_schema.sql
+├── frontend/index.html
 ├── QUICKSTART.md
 └── README.md
 ```
+
+---
+
+## Behavior by Role
+- Admin: full CRUD on employees; sees all rows in dashboard.
+- User: sees only their own employee profile; no add/edit/delete controls in UI.
+
+---
+
+## Tips
+- If you switch DB credentials or port, edit application-mysql.properties.
+- Tokens include roles and employeeId; the frontend stores them in localStorage for role-based UI.
+- Use `mvnd clean install -DskipTests` to build faster once dependencies are cached.
 
 ---
 
@@ -750,10 +458,6 @@ server.port=8081
 - [ ] Error handling validated
 - [ ] Database queries verified in H2 console
 
----
-
-## 📞 Support
-
 For questions or issues:
 1. Review the assignment links and documentation
 2. Check Spring Boot and JWT documentation
@@ -761,7 +465,6 @@ For questions or issues:
 4. Review backend console logs
 5. Test endpoints with Postman/cURL
 
-**Support Contact**: 9172007007
 
 ---
 

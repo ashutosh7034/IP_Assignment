@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Employee Management</title>
+    <style>
+        :root {
+            --primary: #2b6cb0;
+            --secondary: #2c5282;
+            --bg: #f7fafc;
+            --panel: #ffffff;
+            --text: #1a202c;
+            --muted: #4a5568;
+            --danger: #e53e3e;
+            --success: #38a169;
+            --border: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 24px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff;
+            padding: 20px 24px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.18);
+        }
+
+        header h1 { font-size: 1.6rem; }
+
+        .user-info { display: flex; gap: 16px; align-items: center; }
+
+        .badge {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-weight: 700;
+        }
+
+        button.logout {
+            background: #fff;
+            color: var(--primary);
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        main { margin-top: 20px; display: grid; gap: 20px; }
+
+        .panel {
+            background: var(--panel);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+            border: 1px solid var(--border);
+        }
+
+        .panel h2 { margin-bottom: 12px; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 12px;
+        }
+
+        .card {
+            padding: 16px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(43,108,176,0.1), rgba(44,82,130,0.12));
+            border: 1px solid var(--border);
+        }
+
+        .card .label { color: var(--muted); font-size: 0.9rem; }
+        .card .value { font-size: 1.6rem; font-weight: 800; margin-top: 4px; }
+
+        form label { display: block; font-weight: 600; margin-top: 10px; }
+        form input, form select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-top: 6px;
+        }
+
+        form .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+
+        form button {
+            margin-top: 14px;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 10px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.95rem;
+        }
+
+        thead { background: rgba(43,108,176,0.08); }
+
+        .actions button {
+            padding: 6px 10px;
+            margin-right: 6px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .actions .edit { background: var(--success); color: #fff; }
+        .actions .delete { background: var(--danger); color: #fff; }
+
+        .message { margin-top: 10px; padding: 10px; border-radius: 8px; display: none; }
+        .message.show { display: block; }
+        .message.error { background: #fed7d7; color: #9b2c2c; border: 1px solid #feb2b2; }
+        .message.success { background: #c6f6d5; color: #276749; border: 1px solid #9ae6b4; }
+    </style>
+</head>
+<body>
+    <header>
+        <div>
+            <h1>Admin Dashboard</h1>
+            <div id="subtitle">Manage employees and view stats</div>
+        </div>
+        <div class="user-info">
+            <div class="badge" id="userBadge"></div>
+            <button class="logout" id="logoutBtn">Logout</button>
+        </div>
+    </header>
+
+    <main>
+        <section class="panel">
+            <h2>Overview</h2>
+            <div class="grid">
+                <div class="card"><div class="label">Total Employees</div><div class="value" id="statTotal">0</div></div>
+                <div class="card"><div class="label">Average Salary</div><div class="value" id="statAvg">0</div></div>
+                <div class="card"><div class="label">Departments</div><div class="value" id="statDept">0</div></div>
+                <div class="card"><div class="label">Active</div><div class="value" id="statActive">0</div></div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2 id="formTitle">Add Employee</h2>
+            <div id="formMsg" class="message"></div>
+            <form id="employeeForm">
+                <div class="row">
+                    <div>
+                        <label for="name">Name</label>
+                        <input id="name" required>
+                    </div>
+                    <div>
+                        <label for="department">Department</label>
+                        <input id="department" required>
+                    </div>
+                    <div>
+                        <label for="salary">Salary</label>
+                        <input id="salary" type="number" required>
+                    </div>
+                    <div>
+                        <label for="email">Email</label>
+                        <input id="email" type="email" required>
+                    </div>
+                    <div>
+                        <label for="phone">Phone</label>
+                        <input id="phone">
+                    </div>
+                    <div>
+                        <label for="position">Position</label>
+                        <input id="position">
+                    </div>
+                    <div>
+                        <label for="status">Status</label>
+                        <select id="status">
+                            <option value="ACTIVE">ACTIVE</option>
+                            <option value="INACTIVE">INACTIVE</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" id="submitBtn">Save Employee</button>
+            </form>
+        </section>
+
+        <section class="panel">
+            <h2>Change Password</h2>
+            <div id="pwdMsg" class="message"></div>
+            <form id="pwdForm">
+                <div class="row">
+                    <div>
+                        <label for="oldPwd">Current Password</label>
+                        <input id="oldPwd" type="password" required>
+                    </div>
+                    <div>
+                        <label for="newPwd">New Password</label>
+                        <input id="newPwd" type="password" required>
+                    </div>
+                    <div>
+                        <label for="confirmPwd">Confirm New Password</label>
+                        <input id="confirmPwd" type="password" required>
+                    </div>
+                </div>
+                <button type="submit">Update Password</button>
+            </form>
+        </section>
+
+        <section class="panel">
+            <div style="display:flex; justify-content: space-between; align-items:center; flex-wrap: wrap; gap: 10px;">
+                <h2>Employees</h2>
+                <input id="search" placeholder="Search by name or department" style="padding:10px; border:1px solid var(--border); border-radius:8px; min-width:240px;">
+            </div>
+            <div id="tableMsg" class="message"></div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Department</th>
+                        <th>Salary</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Position</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="rows"></tbody>
+            </table>
+        </section>
+    </main>
+
+    <script>
+        const apiBase = 'http://localhost:8080/api';
+        const token = localStorage.getItem('token');
+        const roles = JSON.parse(localStorage.getItem('roles') || '[]');
+
+        if (!token || !roles.includes('ROLE_ADMIN')) {
+            window.location.href = 'index.html';
+        }
+
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        };
+
+        let employees = [];
+        let editingId = null;
+
+        const userBadge = document.getElementById('userBadge');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const form = document.getElementById('employeeForm');
+        const formMsg = document.getElementById('formMsg');
+        const tableMsg = document.getElementById('tableMsg');
+        const pwdForm = document.getElementById('pwdForm');
+        const pwdMsg = document.getElementById('pwdMsg');
+        const rows = document.getElementById('rows');
+        const search = document.getElementById('search');
+        const formTitle = document.getElementById('formTitle');
+        const submitBtn = document.getElementById('submitBtn');
+
+        const statTotal = document.getElementById('statTotal');
+        const statAvg = document.getElementById('statAvg');
+        const statDept = document.getElementById('statDept');
+        const statActive = document.getElementById('statActive');
+
+        function showMessage(el, type, msg) {
+            el.textContent = msg;
+            el.className = `message ${type ? type : ''} ${msg ? 'show' : ''}`.trim();
+        }
+
+        function fillUserBadge() {
+            const username = localStorage.getItem('username') || 'Admin';
+            userBadge.textContent = `${username} • ADMIN`;
+        }
+
+        async function fetchEmployees() {
+            showMessage(tableMsg, '', '');
+            const resp = await fetch(`${apiBase}/employees`, { headers });
+            if (!resp.ok) {
+                showMessage(tableMsg, 'error', 'Failed to load employees');
+                return;
+            }
+            employees = await resp.json();
+            render();
+            updateStats();
+        }
+
+        function render() {
+            const term = search.value.trim().toLowerCase();
+            rows.innerHTML = '';
+            const filtered = employees.filter(e =>
+                (e.name || '').toLowerCase().includes(term) ||
+                (e.department || '').toLowerCase().includes(term)
+            );
+            filtered.forEach(emp => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${emp.id || ''}</td>
+                    <td>${emp.name || ''}</td>
+                    <td>${emp.department || ''}</td>
+                    <td>${emp.salary || ''}</td>
+                    <td>${emp.email || ''}</td>
+                    <td>${emp.phone || ''}</td>
+                    <td>${emp.position || ''}</td>
+                    <td>${emp.status || ''}</td>
+                    <td class="actions">
+                        <button class="edit" data-id="${emp.id}">Edit</button>
+                        <button class="delete" data-id="${emp.id}">Delete</button>
+                    </td>
+                `;
+                rows.appendChild(tr);
+            });
+
+            rows.querySelectorAll('button.edit').forEach(btn => btn.addEventListener('click', () => startEdit(btn.dataset.id)));
+            rows.querySelectorAll('button.delete').forEach(btn => btn.addEventListener('click', () => removeEmployee(btn.dataset.id)));
+        }
+
+        function updateStats() {
+            const total = employees.length;
+            statTotal.textContent = total;
+            if (total === 0) {
+                statAvg.textContent = 0;
+                statDept.textContent = 0;
+                statActive.textContent = 0;
+                return;
+            }
+            const sumSalary = employees.reduce((sum, e) => sum + (e.salary || 0), 0);
+            const depts = new Set(employees.map(e => e.department));
+            const active = employees.filter(e => e.status === 'ACTIVE').length;
+            statAvg.textContent = Math.round(sumSalary / total);
+            statDept.textContent = depts.size;
+            statActive.textContent = `${active}/${total}`;
+        }
+
+        function startEdit(id) {
+            const emp = employees.find(e => `${e.id}` === `${id}`);
+            if (!emp) return;
+            editingId = emp.id;
+            formTitle.textContent = 'Edit Employee';
+            submitBtn.textContent = 'Update Employee';
+            document.getElementById('name').value = emp.name || '';
+            document.getElementById('department').value = emp.department || '';
+            document.getElementById('salary').value = emp.salary || '';
+            document.getElementById('email').value = emp.email || '';
+            document.getElementById('phone').value = emp.phone || '';
+            document.getElementById('position').value = emp.position || '';
+            document.getElementById('status').value = emp.status || 'ACTIVE';
+        }
+
+        function resetForm() {
+            editingId = null;
+            formTitle.textContent = 'Add Employee';
+            submitBtn.textContent = 'Save Employee';
+            form.reset();
+        }
+
+        async function saveEmployee(evt) {
+            evt.preventDefault();
+            showMessage(formMsg, '', '');
+            const payload = {
+                name: document.getElementById('name').value.trim(),
+                department: document.getElementById('department').value.trim(),
+                salary: Number(document.getElementById('salary').value),
+                email: document.getElementById('email').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
+                position: document.getElementById('position').value.trim(),
+                status: document.getElementById('status').value
+            };
+
+            const method = editingId ? 'PUT' : 'POST';
+            const url = editingId ? `${apiBase}/employees/${editingId}` : `${apiBase}/employees`;
+
+            const resp = await fetch(url, {
+                method,
+                headers,
+                body: JSON.stringify(payload)
+            });
+
+            if (!resp.ok) {
+                showMessage(formMsg, 'error', 'Failed to save employee');
+                return;
+            }
+
+            if (!editingId) {
+                const data = await resp.json();
+                if (data && data.username) {
+                    showMessage(formMsg, 'success', `Saved. User: ${data.username} / Password: ${data.temporaryPassword}`);
+                } else {
+                    showMessage(formMsg, 'success', 'Saved successfully');
+                }
+            } else {
+                showMessage(formMsg, 'success', 'Saved successfully');
+            }
+
+            resetForm();
+            await fetchEmployees();
+        }
+
+        async function changePassword(evt) {
+            evt.preventDefault();
+            showMessage(pwdMsg, '', '');
+            const oldPassword = document.getElementById('oldPwd').value.trim();
+            const newPassword = document.getElementById('newPwd').value.trim();
+            const confirmPassword = document.getElementById('confirmPwd').value.trim();
+
+            if (!oldPassword || !newPassword || !confirmPassword) {
+                showMessage(pwdMsg, 'error', 'All fields are required');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                showMessage(pwdMsg, 'error', 'New passwords do not match');
+                return;
+            }
+
+            const resp = await fetch(`${apiBase}/auth/change-password`, {
+                method: 'POST',
+                headers: { ...headers, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ oldPassword, newPassword })
+            });
+
+            if (!resp.ok) {
+                showMessage(pwdMsg, 'error', 'Failed to update password');
+                return;
+            }
+
+            showMessage(pwdMsg, 'success', 'Password updated');
+            pwdForm.reset();
+        }
+
+        async function removeEmployee(id) {
+            if (!confirm('Delete this employee?')) return;
+            const resp = await fetch(`${apiBase}/employees/${id}`, { method: 'DELETE', headers });
+            if (!resp.ok) {
+                showMessage(tableMsg, 'error', 'Failed to delete employee');
+                return;
+            }
+            await fetchEmployees();
+            showMessage(tableMsg, 'success', 'Employee deleted');
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
+
+        logoutBtn.addEventListener('click', logout);
+        form.addEventListener('submit', saveEmployee);
+        pwdForm.addEventListener('submit', changePassword);
+        search.addEventListener('input', render);
+
+        fillUserBadge();
+        fetchEmployees();
+    </script>
+</body>
+</html>

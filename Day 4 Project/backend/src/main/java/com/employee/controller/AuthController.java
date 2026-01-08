@@ -1,21 +1,24 @@
 package com.employee.controller;
 
+import com.employee.dto.ChangePasswordRequest;
 import com.employee.dto.LoginRequest;
 import com.employee.dto.LoginResponse;
 import com.employee.dto.RegisterRequest;
 import com.employee.service.AuthService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
-@RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class AuthController {
     
     private final AuthService authService;
+
+    public AuthController(AuthService authService) {
+        this.authService = authService;
+    }
     
     @PostMapping("/register")
     public ResponseEntity<LoginResponse> register(@RequestBody RegisterRequest request) {
@@ -47,5 +50,24 @@ public class AuthController {
             return ResponseEntity.ok(valid);
         }
         return ResponseEntity.ok(false);
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestHeader("Authorization") String authHeader,
+                                            @RequestBody ChangePasswordRequest request) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No token provided");
+        }
+
+        String token = authHeader.substring(7);
+        String username = authService.getUsernameFromToken(token);
+
+        try {
+            authService.changePassword(username, request);
+            return ResponseEntity.ok(new LoginResponse(null, username, null, "Password updated successfully"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new LoginResponse(null, null, null, e.getMessage()));
+        }
     }
 }

@@ -1,12 +1,12 @@
 package com.employee.service;
 
+import com.employee.dto.ChangePasswordRequest;
 import com.employee.dto.LoginRequest;
 import com.employee.dto.LoginResponse;
 import com.employee.dto.RegisterRequest;
 import com.employee.entity.User;
 import com.employee.repository.UserRepository;
 import com.employee.util.JwtUtil;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,12 +16,17 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Service
-@RequiredArgsConstructor
 public class AuthService {
     
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil;
+    }
     
     @Transactional
     public LoginResponse register(RegisterRequest request) {
@@ -49,7 +54,7 @@ public class AuthService {
         
         String token = jwtUtil.generateToken(savedUser.getUsername());
         
-        return new LoginResponse(token, savedUser.getUsername(), savedUser.getEmail(), "Registration successful");
+        return new LoginResponse(token, savedUser.getUsername(), savedUser.getEmail(), "Registration successful", savedUser.getRoles(), savedUser.getEmployeeId());
     }
     
     public LoginResponse login(LoginRequest request) {
@@ -66,7 +71,7 @@ public class AuthService {
         
         String token = jwtUtil.generateToken(user.getUsername());
         
-        return new LoginResponse(token, user.getUsername(), user.getEmail(), "Login successful");
+        return new LoginResponse(token, user.getUsername(), user.getEmail(), "Login successful", user.getRoles(), user.getEmployeeId());
     }
     
     public Boolean validateToken(String token) {
@@ -75,5 +80,23 @@ public class AuthService {
     
     public String getUsernameFromToken(String token) {
         return jwtUtil.extractUsername(token);
+    }
+    
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    @Transactional
+    public void changePassword(String username, ChangePasswordRequest request) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+            throw new RuntimeException("Old password is incorrect");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
     }
 }
